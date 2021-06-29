@@ -5,15 +5,31 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
 //Rule for rpc-proxy Firewall
 type Rule struct {
-	RDirection   Direction
-	RSubject     Subject
-	RDestination string
-	RInt         int
+	allow       bool
+	Direction   Direction
+	Subject     Subject
+	Destination string
+	Interface   string
+	Member      string
+	DomUUID     string
+	DomID       string
+	DomType     string
+	Sender      string
+	specStubdom bool
+	Stubdom     bool
+	ifBool      ifBool
+	Int         int
+}
+
+type ifBool struct {
+	condition  bool
+	identifier string
 }
 
 //Direction ...
@@ -66,15 +82,52 @@ func tempReadConfig(path string) {
 
 func createRule(ruleSlc []string) Rule {
 	l := lex("Testing", ruleSlc)
+	var newRule Rule
 	for aItem := range l.items {
-		fmt.Println("Item: ", aItem)
+		//fmt.Println("Item: ", aItem)
+		switch aItem.Ityp {
+		case itemRule:
+			if aItem.val == "allow" {
+				newRule.allow = true
+			} else {
+				newRule.allow = false
+			}
+		case itemDirSub:
+			dirsub, _ := strconv.Atoi(aItem.val)
+			newRule.Direction = Direction(dirsub / 10)
+			newRule.Subject = Subject(dirsub % 10)
+		case itemDest:
+			newRule.Destination = aItem.val
+		case itemInter:
+			newRule.Interface = aItem.val
+		case itemMember:
+			newRule.Member = aItem.val
+		case itemDomUUID:
+			newRule.DomUUID = aItem.val
+		case itemDomID:
+			newRule.DomID = aItem.val
+		case itemDomType:
+			newRule.DomType = aItem.val
+		case itemSender:
+			newRule.Sender = aItem.val
+		case itemStubdom:
+			newRule.specStubdom = true
+			if aItem.val == "true" {
+				newRule.Stubdom = true
+			} else {
+				newRule.Stubdom = false
+			}
+		case itemIfBoolTrue:
+			newRule.ifBool.condition = true
+			newRule.ifBool.identifier = aItem.val
+		case itemIfBoolFalse:
+			newRule.ifBool.condition = false
+			newRule.ifBool.identifier = aItem.val
+
+		}
 
 	}
 	//fmt.Println("The thread got closed!")
-
-	var newRule Rule
-	newRule.RDirection = Incoming
-	newRule.RSubject = Error
 
 	return newRule
 }
