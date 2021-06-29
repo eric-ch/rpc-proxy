@@ -53,8 +53,9 @@ const (
 	Error
 )
 
-func tempReadConfig(path string) {
+func tempReadConfig(path string) []Rule {
 	file, err := os.Open(path)
+	var rules []Rule
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,6 +71,7 @@ func tempReadConfig(path string) {
 			ruleSlc := strings.Fields(ruleStr)
 
 			r := createRule(ruleSlc)
+			rules = append(rules, r)
 			fmt.Println("Rule: ", r)
 		}
 
@@ -78,6 +80,7 @@ func tempReadConfig(path string) {
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
+	return rules
 }
 
 func createRule(ruleSlc []string) Rule {
