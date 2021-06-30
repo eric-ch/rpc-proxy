@@ -10,4 +10,5 @@ func main() {
 	fmt.Println("Starting RPC-Proxy")
 	rules := tempReadConfig("rpc-proxy1.rules")
 	fmt.Println(rules)
+	bouncer()
 }
